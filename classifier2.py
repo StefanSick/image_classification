@@ -8,13 +8,15 @@ from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import accuracy_score
 
 # for reproducibility
-random_state=123
-tf.random.set_seed(123)
-tf.keras.utils.set_random_seed(123)
+seed = 123
+random_state=seed
+np.random.seed(seed)
+tf.random.set_seed(seed)
+tf.keras.utils.set_random_seed(seed)
 tf.config.experimental.enable_op_determinism()
 
 def download_dataset(dataset_name, model_type):
@@ -58,11 +60,15 @@ def build_model(model_type, input_shape):
         return models.Sequential([
             layers.Input(shape=input_shape),
             layers.Conv2D(32, (3,3), activation='relu'),
-            layers.MaxPooling2D((2,2)), layers.Dropout(0.25),
+            layers.MaxPooling2D((2,2)), 
+            layers.Dropout(0.25),
             layers.Conv2D(64, (3,3), activation='relu'), 
-            layers.MaxPooling2D((2,2)), layers.Dropout(0.25),
-            layers.Flatten(), layers.Dense(128, activation='relu'),
-            layers.Dropout(0.5), layers.Dense(10, activation='softmax')
+            layers.MaxPooling2D((2,2)), 
+            layers.Dropout(0.25),
+            layers.Flatten(), 
+            layers.Dense(128, activation='relu'),
+            layers.Dropout(0.5), 
+            layers.Dense(10, activation='softmax')
         ])
     else:  # rnn
         return models.Sequential([
@@ -87,12 +93,11 @@ def main():
     args = parser.parse_args()
     
     print(f"Using dataset: {args.dataset}")
-
+    print(f"Model type: {args.model_type}")
     model_filename = f"{args.model_type}model_{args.dataset}.keras"
     args.model_path = f"models/{model_filename}"
 
     print(f"Model: {model_filename}")
-    print(f"Path: {args.model_path}")
     Path(args.model_path).parent.mkdir(parents=True, exist_ok=True)
 
     
@@ -116,10 +121,17 @@ def main():
         plt.subplot(1, 2, 1)
         plt.plot(history.history['accuracy'], label='Training Accuracy')
         plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+        plt.title('Model Accuracy')
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+
         plt.legend()
         plt.subplot(1, 2, 2)
         plt.plot(history.history['loss'], label='Training Loss')
         plt.plot(history.history['val_loss'], label='Validation Loss')
+        plt.title('Model Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
         plt.legend()
         plt.show()
         
@@ -146,12 +158,19 @@ def main():
 
         plt.figure()
         plt.imshow(img, cmap=cmap)
-        plt.title(f"Truth: {true_label}\nPredicted: {pred_label}")
+        plt.title(f"Sample Image: Truth: {true_label}\nPredicted: {pred_label}")
         plt.axis("off")
         plt.show()
         
         print(cm)
         print (f"Prediction Duration: {(endp - startp):.4f}")
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+        cm2 = confusion_matrix(y_true, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm2)
+        disp.plot(ax=ax, cmap='Blues')
+        plt.title(f'{args.dataset} {args.model_type}- Confusion Matrix\nTest Accuracy: {accuracy:.3f}')
+        plt.show()
 
 if __name__ == "__main__":
     main()
