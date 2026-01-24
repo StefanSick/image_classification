@@ -1,16 +1,42 @@
-# Image Classifier
+# Image Classification: CNN, RNN, and Vision Transformers
 
-## Versions
-- Python 3.10+
-- TensorFlow 2.17.0
-- NumPy 1.26.4
-- Matplotlib 3.9.2
+This project explores the impact of data representation by comparing traditional computer vision techniques (SIFT) against modern deep learning architectures (CNN, RNN, and ViT).
 
-## Setup & Run
-1. ./setup.sh
-2. ./run.sh --help
+---
 
-## Examples
-./run.sh --dataset cifar10 --epochs 20 --mode train
-./run.sh --dataset fashion_mnist --mode test
-./run.sh --dataset cifar10 --mode test
+##  Setup & Installation
+
+### 1. Environment Setup
+This project uses **Conda**. Ensure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
+
+```bash
+# Create the environment
+conda env create -f environment.yml
+
+# Activate the environment
+conda activate image_classification
+```
+
+### 2. Project Initialization
+Run the setup script to prepare the directory structure and fetch binary files via Git LFS.
+* **Windows (CMD/PowerShell):** `bash setup.sh`
+* **Linux/macOS/Git Bash:** `./setup.sh`
+
+---
+
+## Usage Reference
+Use the `run.sh` wrapper to execute training or testing. 
+
+```bash
+bash run.sh
+```
+| Goal | Model Type | Command |
+| :--- | :--- | :--- |
+| **Train CNN** | `cnn` | `python src/classifier3.py --dataset fashion_mnist --model_type cnn --mode train`
+| **Train RNN** | `rnn` | `python src/classifier3.py --dataset cifar10 --model_type rnn --mode train`
+| **Train ViT** | `vit` | `python src/classifier3.py --dataset cifar10 --model_type vit --mode train`
+| **Test Model** | `any` | `python src/classifier3.py --dataset cifar10 --model_type vit --mode test`
+
+> **Note:** Models are saved in the `/models` directory as `.keras` files. Ensure you have trained a model before attempting to run it in `--mode test`.
+
+---
