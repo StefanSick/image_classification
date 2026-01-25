@@ -10,6 +10,9 @@ This project explores the impact of data representation by comparing traditional
 This project uses **Conda**. Ensure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
 
 ```bash
+# Create a tool environment containing mamba
+conda create -n conda-tools -c conda-forge mamba -y
+
 # Create the environment
 conda env create -f environment.yml
 
