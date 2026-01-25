@@ -80,15 +80,14 @@ def download_dataset(dataset_name, model_type):
         (X_train, y_train), (X_test, y_test) = datasets.cifar10.load_data()
         img_rows, img_cols, channels = 32, 32, 3
         class_names = ['Airplane','Automobile','Bird','Cat','Deer','Dog','Frog','Horse','Ship','Truck']
+        X_train = X_train.astype('float32') / 255.0
+        X_test = X_test.astype('float32') / 255.0
         cmap = None
     else:  # fashion_mnist
         (X_train, y_train), (X_test, y_test) = datasets.fashion_mnist.load_data()
         img_rows, img_cols, channels = 28, 28, 1
         class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat','Sandal','Shirt','Sneaker','Bag','Ankle boot']
         cmap = "gray"
-
-    X_train = X_train.astype('float32') / 255.0
-    X_test = X_test.astype('float32') / 255.0
 
     if model_type in ["cnn", "vit"]:
         X_train = X_train.reshape((X_train.shape[0], img_rows, img_cols, channels))
