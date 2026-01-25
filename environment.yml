@@ -1,4 +1,4 @@
-name: image_classification
+name: image_classification_5
 channels:
   - conda-forge
   - defaults
@@ -15,4 +15,3 @@ dependencies:
       - tensorflow==2.19.0  
       - opencv-python==4.10.0.84
 
-channel_priority: strict

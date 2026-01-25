@@ -1,44 +1,42 @@
 #!/bin/bash
 set -e
 
-echo "--- Starting Environment Setup ---"
+echo "--- Validating Conda Installation ---"
 
-# 1. Check if Conda is installed
 if ! command -v conda &> /dev/null; then
-    echo "Conda not found. Installing Miniconda..."
-    
-    # Download the installer (Linux version)
-    curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-    
-    # Run installer in batch mode (-b) and update shell profile (-u)
-    bash Miniconda3-latest-Linux-x86_64.sh -b -u
-    
-    # Initialize conda for the current shell session
-    source ~/miniconda3/bin/activate
-    conda init
-    
-    echo "Miniconda installed successfully."
+    echo "Conda is required but was not found in PATH."
+    exit 1
+fi
+
+echo "Conda detected: $(conda --version)"
+
+echo "--- Validating Tools Environment ---"
+
+if ! conda env list | awk '{print $1}' | grep -qx "conda-tools"; then
+    echo "Required environment 'conda-tools' not found."
+    echo "Run the following command once:"
+    echo ""
+    echo "  conda create -n conda-tools -c conda-forge mamba -y"
+    echo ""
+    exit 1
+fi
+
+echo "conda-tools environment found."
+
+if [ ! -f environment.yml ]; then
+    echo "environment.yml not found in the current directory."
+    exit 1
+fi
+
+echo "--- Creating / Updating Project Environment ---"
+
+# Extract the environment name from environment.yml
+ENV_NAME=$(grep "name:" environment.yml | awk '{print $2}')
+
+if ! conda env list | awk '{print $1}' | grep -qx "$ENV_NAME"; then
+    echo "Environment '$ENV_NAME' not found. Creating..."
+    conda run -n conda-tools mamba env create -f environment.yml
 else
-    echo "Conda is already installed. Skipping installation."
+    echo "Environment '$ENV_NAME' exists. Updating..."
+    conda run -n conda-tools mamba env update -f environment.yml --prune
 fi
-
-# 2. Install Mamba into the base environment
-if ! command -v mamba &> /dev/null; then
-    echo "Mamba not found. Installing Mamba via conda-forge..."
-    conda install mamba -n base -c conda-forge -y
-else
-    echo "Mamba is already installed."
-fi
-
-# 3. Create or Update the environment using Mamba
-echo "Installing/Updating libraries from environment.yml using MAMBA..."
-# We use mamba here for the 10x speed boost in dependency solving
-mamba env update -f environment.yml --prune
-
-# 4. Create the models directory
-if [ ! -d "models" ]; then
-    mkdir models
-    echo "Created /models directory."
-fi
-
-echo "--- Setup Complete! ---"
