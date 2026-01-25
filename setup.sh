@@ -22,11 +22,20 @@ else
     echo "Conda is already installed. Skipping installation."
 fi
 
-# 2. Create or Update the environment
-echo "Installing/Updating libraries from environment.yml..."
-conda env update -f environment.yml --prune
+# 2. Install Mamba into the base environment
+if ! command -v mamba &> /dev/null; then
+    echo "Mamba not found. Installing Mamba via conda-forge..."
+    conda install mamba -n base -c conda-forge -y
+else
+    echo "Mamba is already installed."
+fi
 
-# 3. Create the models directory
+# 3. Create or Update the environment using Mamba
+echo "Installing/Updating libraries from environment.yml using MAMBA..."
+# We use mamba here for the 10x speed boost in dependency solving
+mamba env update -f environment.yml --prune
+
+# 4. Create the models directory
 if [ ! -d "models" ]; then
     mkdir models
     echo "Created /models directory."
