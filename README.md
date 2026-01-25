@@ -24,12 +24,13 @@ Run the setup script to prepare the directory structure and fetch binary files v
 
 ---
 
-## Usage Reference
+## Usage Deep Learning
 Use the `run.sh` wrapper to execute training or testing. 
 
 ```bash
 bash run.sh
 ```
+## Other option:
 | Goal | Model Type | Command |
 | :--- | :--- | :--- |
 | **Train CNN** | `cnn` | `python src/classifier3.py --dataset fashion_mnist --model_type cnn --mode train`
