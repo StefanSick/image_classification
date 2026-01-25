@@ -15,6 +15,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 from tensorflow.keras import datasets
+import seaborn as sns
 
 # for reproducibility
 random_state=123
@@ -291,10 +292,13 @@ def main():
         print(cm)
         print (f"Prediction Duration: {(endp - startp):.4f}")
 
-        fig, ax = plt.subplots(figsize=(10, 8))
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-        disp.plot(ax=ax, cmap='Blues')
-        plt.title(f'{args.dataset} - {args.model_type} - Confusion Matrix\nTest Accuracy: {accuracy:.3f}')
+        # 4. Heatmap
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names, yticklabels=class_names, cmap='Blues')
+        plt.title(f'Confusion Matrix: {args.model_type} ({args.dataset})')
+        
+        os.makedirs("plots", exist_ok=True)
+        plt.savefig(f"plots/{args.model_type}_{args.dataset}_cm.png")
         plt.show()
 
 if __name__ == "__main__":
