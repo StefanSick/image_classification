@@ -4,7 +4,7 @@
 source $(conda info --base)/etc/profile.d/conda.sh
 
 # Activate the environment
-conda activate image_classification
+conda activate image_classification_new
 
 while true; do
   clear

@@ -13,11 +13,6 @@ This project uses **Conda**. Ensure you have [Miniconda](https://docs.conda.io/e
 # Create a tool environment containing mamba
 conda create -n conda-tools -c conda-forge mamba -y
 
-# Create the environment
-conda env create -f environment.yml
-
-# Activate the environment
-conda activate image_classification
 ```
 
 ### 2. Project Initialization
@@ -33,14 +28,5 @@ Use the `run.sh` wrapper to execute training or testing.
 ```bash
 bash run.sh
 ```
-## Other option:
-| Goal | Model Type | Command |
-| :--- | :--- | :--- |
-| **Train CNN** | `cnn` | `python src/classifier3.py --dataset fashion_mnist --model_type cnn --mode train`
-| **Train RNN** | `rnn` | `python src/classifier3.py --dataset cifar10 --model_type rnn --mode train`
-| **Train ViT** | `vit` | `python src/classifier3.py --dataset cifar10 --model_type vit --mode train`
-| **Test Model** | `any` | `python src/classifier3.py --dataset cifar10 --model_type vit --mode test`
-
-> **Note:** Models are saved in the `/models` directory as `.keras` files. Ensure you have trained a model before attempting to run it in `--mode test`.
 
 ---
