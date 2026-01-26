@@ -16,11 +16,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 from tensorflow.keras import datasets
 import seaborn as sns
+from sklearn.cluster import KMeans
 
 # for reproducibility
-random_state=123
-tf.random.set_seed(123)
-tf.keras.utils.set_random_seed(123)
+#random_state=123
+#tf.random.set_seed(123)
+#tf.keras.utils.set_random_seed(123)
+# for reproducibility
+seed = 123
+np.random.seed(seed)
 
 
 def download_dataset(dataset_name):
@@ -131,25 +135,46 @@ def visualize_bovw_histogram(hist, title='BoVW Histogram'):
     plt.grid(True, alpha=0.3)
     plt.show()
 
+def visualize_codebook(codebook, n_display=16):
+    """Show first n visual words (cluster centers)"""
+    centers = codebook.cluster_centers_.reshape(-1, 8, 8)  # Assuming 64-dim SIFT patches
+    plt.figure(figsize=(8, 8))
+    for i in range(min(n_display, len(centers))):
+        plt.subplot(4, 4, i+1)
+        plt.imshow(centers[i], cmap='gray')
+        plt.title(f'Word {i}')
+        plt.axis('off')
+    plt.suptitle('Visual Codebook (First 16 Words)')
+    plt.tight_layout()
+    plt.show()
+
 def extract_sift_descriptors(X):
-    """Universal: handles grayscale + RGB"""
-    sift = cv2.SIFT_create()
-    all_descriptors = []
+    """Locked params + preprocessing for consistency"""
+    sift = cv2.SIFT_create(
+        nfeatures=1000,           # Fewer, stable
+        nOctaveLayers=2,          # Fewer octaves for small imgs
+        contrastThreshold=0.02,   # Lower for Fashion-MNIST
+        edgeThreshold=5,          # Less edge rejection
+        sigma=1.2                 # Consistent initial blur
+    )
     
+    all_descriptors = []
     for img in X:
-        # Handle both datasets
-        if len(img.shape) == 3:  # CIFAR RGB
-            gray = cv2.cvtColor((img * 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
-        else:  # Fashion grayscale
-            gray = (img * 255).astype(np.uint8)
+        # Consistent preprocessing
+        if len(img.shape) == 3:
+            img_norm = cv2.normalize((img * 255).astype(np.uint8), None, 0, 255, cv2.NORM_MINMAX)
+            gray = cv2.cvtColor(img_norm, cv2.COLOR_RGB2GRAY)
+        else:
+            img_norm = cv2.normalize((img * 255).astype(np.uint8), None, 0, 255, cv2.NORM_MINMAX)
+            gray = img_norm
         
         kp, desc = sift.detectAndCompute(gray, None)
         if desc is not None:
             all_descriptors.append(desc)
     
     descriptors = np.vstack(all_descriptors)
-    print(f"Total descriptors: {descriptors.shape[0]} (dim: {descriptors.shape[1]})")
-    return descriptors
+    descriptors = descriptors.astype(np.float32)  # FP consistency
+    return descriptors[:150000]  # Fixed truncate
 
 def build_codebook(descriptors, n_words=256):
     """KMeans clustering → visual vocabulary"""
@@ -177,19 +202,6 @@ def extract_bovw_features(X, codebook):
     """BoVW for entire dataset"""
     return np.array([image_bovw(img, codebook) for img in X])
 
-def visualize_codebook(codebook, n_display=16):
-    """Show first n visual words (cluster centers)"""
-    centers = codebook.cluster_centers_.reshape(-1, 8, 8)  # Assuming 64-dim SIFT patches
-    plt.figure(figsize=(8, 8))
-    for i in range(min(n_display, len(centers))):
-        plt.subplot(4, 4, i+1)
-        plt.imshow(centers[i], cmap='gray')
-        plt.title(f'Word {i}')
-        plt.axis('off')
-    plt.suptitle('Visual Codebook (First 16 Words)')
-    plt.tight_layout()
-    plt.show()
-
 def main():
     parser = argparse.ArgumentParser(description="Image Classifier: CIFAR-10 or Fashion-MNIST")
     parser.add_argument("--dataset", choices=["cifar10", "fashion_mnist"], default="fashion_mnist", help="Dataset to use")
@@ -208,27 +220,22 @@ def main():
     X_train, y_train, X_test, y_test, class_names = download_dataset(args.dataset)
 
     if args.model_type == "SIFT":
-        y_train = y_train.ravel()
-        #X_train = X_train.ravel()
-        y_test = y_test.ravel()
-        #X_test = X_test.ravel()
-
-        #visualize_sift_keypoints(X_train[0])
+        X_train, y_train = X_train, y_train.ravel()
+        X_test, y_test = X_test, y_test.ravel()
+        visualize_sift_keypoints(X_train[0])
 
         print("Extracting SIFT descriptors...")
         train_descriptors = extract_sift_descriptors(X_train)
         codebook = build_codebook(train_descriptors, n_words=128)
-        #visualize_codebook(codebook)
-
+        visualize_codebook(codebook)
         print("Extracting BoVW...")
         X_train_bovw = extract_bovw_features(X_train, codebook)
         X_test_bovw = extract_bovw_features(X_test, codebook)
-        sample_hist = X_train_bovw[123]
-        #visualize_bovw_histogram(sample_hist, 'Sample Image BoVW Histogram')
+        sample_hist = X_train_bovw[0]
+        visualize_bovw_histogram(sample_hist, 'Sample Image BoVW Histogram')
 
         X_train = X_train_bovw
         X_test = X_test_bovw
-
 
     elif args.model_type == "HIST":
         y_train = y_train.ravel()
