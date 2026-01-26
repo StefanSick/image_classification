@@ -27,13 +27,11 @@ def download_dataset(dataset_name):
     if dataset_name == "cifar10":
         (X_train, y_train), (X_test, y_test) = datasets.cifar10.load_data()
         class_names = ['Airplane','Automobile','Bird','Cat','Deer','Dog','Frog','Horse','Ship','Truck']
-        cmap = None
     else:  # fashion_mnist
         (X_train, y_train), (X_test, y_test) = datasets.fashion_mnist.load_data()
         class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat','Sandal','Shirt','Sneaker','Bag','Ankle boot']
-        cmap = "gray"
-    
-    return X_train, y_train, X_test, y_test, class_names, cmap
+
+    return X_train, y_train, X_test, y_test, class_names
 
 def extract_histogram_features(X, dataset_name, bins=256):
     features = []
@@ -207,20 +205,30 @@ def main():
     Path(args.model_path).parent.mkdir(parents=True, exist_ok=True)
 
     # Load data
-    X_train, y_train, X_test, y_test, class_names, cmap = download_dataset(args.dataset)
+    X_train, y_train, X_test, y_test, class_names = download_dataset(args.dataset)
 
     if args.model_type == "SIFT":
-        visualize_sift_keypoints(X_train[0])
+        y_train = y_train.ravel()
+        #X_train = X_train.ravel()
+        y_test = y_test.ravel()
+        #X_test = X_test.ravel()
+
+        #visualize_sift_keypoints(X_train[0])
 
         print("Extracting SIFT descriptors...")
         train_descriptors = extract_sift_descriptors(X_train)
         codebook = build_codebook(train_descriptors, n_words=128)
-        visualize_codebook(codebook)
+        #visualize_codebook(codebook)
 
         print("Extracting BoVW...")
         X_train_bovw = extract_bovw_features(X_train, codebook)
+        X_test_bovw = extract_bovw_features(X_test, codebook)
         sample_hist = X_train_bovw[123]
-        visualize_bovw_histogram(sample_hist, 'Sample Image BoVW Histogram')
+        #visualize_bovw_histogram(sample_hist, 'Sample Image BoVW Histogram')
+
+        X_train = X_train_bovw
+        X_test = X_test_bovw
+
 
     elif args.model_type == "HIST":
         y_train = y_train.ravel()
@@ -267,29 +275,14 @@ def main():
         print (f"Evaluation - Test set - Duration: {(end - start):.4f}")
         print(f"Test Accuracy: {accuracy:.4f}")
         
-        y_true = np.argmax(y_test, axis=1)
 
         print("Start Model Predictions")
 
         startp = time.time()
-        y_pred = pipelineT.predict(X_test, verbose=0).argmax(axis=1)
+        y_pred = pipelineT.predict(X_test)
         endp = time.time()
 
-        cm = confusion_matrix(y_true, y_pred)
-
-        img = X_test[index]
-        true_label = class_names[np.argmax(y_test[index])]
-
-        pred_probs = pipelineT.predict(np.expand_dims(img, axis=0), verbose = 0)
-        pred_label = class_names[np.argmax(pred_probs)]
-
-        plt.figure()
-        plt.imshow(img, cmap=cmap)
-        plt.title(f"Sample Image: Truth: {true_label}\nPredicted: {pred_label}")
-        plt.axis("off")
-        plt.show()
-
-        print(cm)
+        cm = confusion_matrix(y_test, y_pred)
         print (f"Prediction Duration: {(endp - startp):.4f}")
 
         # 4. Heatmap
