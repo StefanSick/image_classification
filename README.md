@@ -5,10 +5,10 @@ This project explores the impact of data representation by comparing shallow lea
 ---
 ##  Setup & Installation
 
-### 1. Run VENV_setup.bat
+### 1. Run setup.bat
 This will create a Virtual Environment for python and download all required dependencies and libraries.
 
-### 2. Run VENV_run.bat
+### 2. Run run.bat
 This will start the graphical CLI from where both datasets can be used on all 5 models for either training or testing, 
 either with our saved models (provided separetely in Submission of large additional Files) or with self trained models.
 
@@ -46,6 +46,7 @@ On Linux/macOS:
 * src/classifierSL.py — The Python file for Histogram and SIFT.
 * run.bat / run.sh — Interactive wrappers for Windows and Unix.
 * requirements.txt — Lists of libraries loaded into the Virtual Environment.
+
 
 
 
