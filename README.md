@@ -38,22 +38,29 @@ On Linux/macOS:
         chmod +x setup_dl.sh && ./setup_dl.sh
         chmod +x run_dl.sh && ./run_dl.sh
 
+##  Alternative: Python VENV
 
+### 1. Run VENV_setup.bat
+This will create a venve and download all required dependencies and libraries
+
+### 2. Run VENV_run.bat
+This will start the graphical CLI from where both datasets can be used on all 5 models for either training or testing, 
+either with our saved models (provided separetely in Submission of large additional Files) or with self trained models.
 
 ## Usage
 * When you launch the script, you will be presented with an interactive menu to configure your run:
 
 * Select Dataset: Choose between Fashion-MNIST or CIFAR-10.
 
-* Select Model: Choose the architecture (CNN, RNN, or ViT).
+* Select Model: Choose the architecture (HIST, SIFT, CNN, RNN, or ViT).
 
-* Select Mode: - Train: You will be prompted for Epochs and Batch Size.
+* Select Mode: - Train: You will be prompted for Epochs and Batch Size (DL models only).
 
 * Test: The script skips parameter input and runs evaluation immediately.
 
 ## Project Structure
-* src/classifier3.py — The Python logic for all DL models.
-* src/classifier.py — The Python logic for HIST and SIFT.
+* src/classifier3.py — The Python file for all DL models (CNN, RNN, ViT).
+* src/classifier.py — The Python file for Histogramm and SIFT.
 * run.bat / run.sh — Interactive wrappers for Windows and Unix.
 * environment.yml — Conda environment configuration.
 
