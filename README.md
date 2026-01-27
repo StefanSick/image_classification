@@ -41,7 +41,7 @@ On Linux/macOS:
 ##  Alternative: Python VENV
 
 ### 1. Run VENV_setup.bat
-This will create a venve and download all required dependencies and libraries
+This will create a venv and download all required dependencies and libraries
 
 ### 2. Run VENV_run.bat
 This will start the graphical CLI from where both datasets can be used on all 5 models for either training or testing, 
@@ -63,4 +63,5 @@ either with our saved models (provided separetely in Submission of large additio
 * src/classifier.py — The Python file for Histogramm and SIFT.
 * run.bat / run.sh — Interactive wrappers for Windows and Unix.
 * environment.yml — Conda environment configuration.
+
 
