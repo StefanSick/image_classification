@@ -1,0 +1,28 @@
+HIST,Feature Extraction,,Model Training,,,Evaluation,,Predict,,SUM (s),Min
+,Train,Test,,,,Train,Test,,,,
+Fashion,6.5,1.1,788,,,1201,201,201,,2399,40
+Cifar,5.08,0.97,2129,,,2343,471,471,,5420,90
+,,,,,,,,,,,
+,,,,,,,,,,,
+SIFT,Feature Extraction,,Model Training,Codebook,BoVW,Evaluation,,Predict,,,
+,Train,Test,,,,Train,Test,,,,
+Fashion,63,21,806,0.7,123,652,109,109,,1884,31
+Cifar,70,27,725,0.7,130,477,96,96,,1622,27
+,,,,,,,,,,,
+,,,,,,,,,,,
+CNN,,,Model Training,,,Evaluation,,Predict,,,
+,,,30 Epochs,15 Epochs,,Train,Test,,,,
+Fashion,,,230,118,,NA,0.63,0.777,,349,6
+Cifar,,,235,114,,NA,1.03,1.43,,351,6
+,,,,,,,,,,,
+,,,,,,,,,,,
+RNN,,,Model Training,,,Evaluation,,Predict,,,
+,,,30 Epochs,15 Epochs,,Train,Test,,,,
+Fashion,,,184,89,,NA,0.73,1.2,,275,5
+Cifar,,,160,85,,NA,1.1,1.89,,248,4
+,,,,,,,,,,,
+,,,,,,,,,,,
+ViT,,,Model Training,,,Evaluation,,Predict,,,
+,,,30 Epochs,15 Epochs,,Train,Test,,,,
+Fashion,,,519,264,,NA,0.78,2.4,,786,13
+Cifar,,,580,300,,NA,1.7,3.43,,885,15
