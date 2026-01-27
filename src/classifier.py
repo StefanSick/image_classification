@@ -13,9 +13,10 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, ConfusionMatrixDisplay, f1_score
 from tensorflow.keras import datasets
 import seaborn as sns
+import pandas as pd
 from sklearn.cluster import KMeans
 
 # for reproducibility
@@ -259,18 +260,25 @@ def main():
     if args.mode == "train":
         pipeline = Pipeline([('scaler', StandardScaler()), ('svm', SVC(kernel='rbf'))])
         print("Start Model Training")
-        startt = time.time()
+
+        start = time.time()
         pipeline.fit(X_train, y_train)
-        endt = time.time()
-        tm = endt - startt
-        print(f"Training duration: {tm}")
+        end = time.time()
+
+        print(f"Training duration: {end - start}")
         with open(args.model_path,'wb') as f:
             pickle.dump(pipeline,f)
             print(f"Model saved to {args.model_path}")
 
+        start = time.time()
+        accuracy = pipelineT.score(X_train, y_train)
+        end = time.time()
+
+        print (f"Evaluation - Test set - Duration: {(end - start):.4f}")
+        print(f"Training Accuracy: {accuracy:.4f}")
 
     elif args.mode == "test":
-        print(f"Model: {model_filename}")
+        print(f"Loading Shallow Learning Model: {model_filename}")
         index = 123
         with open(args.model_path, 'rb') as f:
             pipelineT = pickle.load(f)
@@ -282,12 +290,32 @@ def main():
         print (f"Evaluation - Test set - Duration: {(end - start):.4f}")
         print(f"Test Accuracy: {accuracy:.4f}")
         
-
         print("Start Model Predictions")
-
         startp = time.time()
         y_pred = pipelineT.predict(X_test)
         endp = time.time()
+
+        avg_latency = (end - start) / len(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        f1_macro = f1_score(y_test, y_pred, average='macro')
+        model_size_mb = os.path.getsize(args.model_path) / (1024 * 1024)
+
+        # 3. Print & Save Results
+        print("\nClassification Report:")
+        print(classification_report(y_test, y_pred, target_names=class_names))
+
+        os.makedirs("results", exist_ok=True)
+        results_path = "results/experiment_summary.csv"
+        new_result = {
+            "Timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "Dataset": args.dataset,
+            "Model": args.model_type,
+            "Accuracy": round(acc, 4),
+            "F1_Macro": round(f1_macro, 4),
+            "Latency_ms": round(avg_latency * 1000, 4),
+            "Size_MB": round(model_size_mb, 2)
+        }
+        pd.DataFrame([new_result]).to_csv(results_path, mode='a', header=not os.path.exists(results_path), index=False)
 
         cm = confusion_matrix(y_test, y_pred)
         print (f"Prediction Duration: {(endp - startp):.4f}")
@@ -296,7 +324,6 @@ def main():
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names, yticklabels=class_names, cmap='Blues')
         plt.title(f'Confusion Matrix: {args.model_type} ({args.dataset})')
-        
         os.makedirs("plots", exist_ok=True)
         plt.savefig(f"plots/{args.model_type}_{args.dataset}_cm.png")
         plt.show()
