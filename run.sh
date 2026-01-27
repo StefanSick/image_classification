@@ -1,87 +1,136 @@
 #!/bin/bash
 
-# Initialize Conda for this script session
-source $(conda info --base)/etc/profile.d/conda.sh
-
-# Activate the environment
-conda activate image_classification_new
+# Activate virtual environment
+source venv/bin/activate
 
 while true; do
-  clear
-  echo "=== DATASET ==="
-  echo "1. Fashion-MNIST"
-  echo "2. CIFAR-10"
-  read -p "Dataset (1-2): " ds
-
-  case "$ds" in
-    1) dataset="fashion_mnist" ;;
-    2) dataset="cifar10" ;;
-    *) echo "Invalid choice."; sleep 1; continue ;;
-  esac
-
-  while true; do
     clear
+
+    echo "=== DATASET ==="
+    echo "1. Fashion-MNIST"
+    echo "2. CIFAR-10"
+    echo -n "Dataset (1-2): "
+    read ds
+
+    case "$ds" in
+        1) dataset="fashion_mnist" ;;
+        2) dataset="cifar10" ;;
+        *) continue ;;
+    esac
+
+    clear
+
     echo "=== MODEL ==="
     echo "1. CNN"
-    echo "2. RNN"  
-    echo "3. Vision Transformer (ViT)"
-    read -p "Model (1-3): " mt
+    echo "2. RNN"
+    echo "3. ViT"
+    echo "4. HIST"
+    echo "5. SIFT"
+    echo -n "Model (1-5): "
+    read mt
 
     case "$mt" in
-      1) model_type="cnn" ;;
-      2) model_type="rnn" ;;
-      3) model_type="vit" ;;
-      *) echo "Invalid choice."; sleep 1; continue ;;
+        1) model_type="cnn" ;;
+        2) model_type="rnn" ;;
+        3) model_type="vit" ;;
+        4) model_type="HIST" ;;
+        5) model_type="SIFT" ;;
+        *) continue ;;
     esac
-    break
-  done
 
-  while true; do
     clear
+
     echo "=== MODE ==="
-    echo "1. Train" 
+    echo "1. Train"
     echo "2. Test"
-    read -p "Mode (1-2): " md
+    echo -n "Mode (1-2): "
+    read md
 
     case "$md" in
-      1) mode="train" ;;
-      2) mode="test" ;;
-      *) echo "Invalid choice."; sleep 1; continue ;;
+        1) mode="train" ;;
+        2) mode="test" ;;
+        *) continue ;;
     esac
-    break
-  done
 
-  # Parameters: Only ask for training epochs/batch size in Train mode
-  if [[ "$mode" == "train" ]]; then
+    # Default params; only ask in train + cnn/rnn/vit
+    epochs=""
+    batch_size=""
+
+    if [ "$mode" = "train" ]; then
+        if [ "$model_type" = "cnn" ] || [ "$model_type" = "rnn" ] || [ "$model_type" = "vit" ]; then
+            clear
+            echo "=== PARAMS (Enter or press Enter for default) ==="
+
+            echo -n "Epochs [15]: "
+            read in_epochs
+            if [ -z "$in_epochs" ]; then
+                epochs="15"
+            else
+                epochs="$in_epochs"
+            fi
+
+            echo -n "Batch size [64]: "
+            read in_batch
+            if [ -z "$in_batch" ]; then
+                batch_size="64"
+            else
+                batch_size="$in_batch"
+            fi
+        fi
+    fi
+
     clear
-    echo "=== PARAMS (Enter for default) ==="
-    read -p "Epochs [15]: " epochs
-    epochs=${epochs:-15}
-    read -p "Batch size [64]: " batch_size
-    batch_size=${batch_size:-64}
-  fi
 
-  clear
-  echo "=== CONFIRM ==="
-  echo "Dataset: $dataset"
-  echo "Model:   $model_type" 
-  echo "Mode:    $mode"
-  if [[ "$mode" == "train" ]]; then
-    echo "Epochs:  $epochs"
-    echo "Batch:   $batch_size"
-  fi
-  echo
-  read -p "Run? (Y/N): " confirm
-  [[ "$confirm" =~ ^[Yy]$ ]] || continue
+    echo "=== CONFIRM ==="
+    echo "Dataset: $dataset"
+    echo "Model:   $model_type"
+    echo "Mode:    $mode"
 
-  echo "Running src/classifier3.py..."
-  
-  if [[ "$mode" == "train" ]]; then
-    python src/classifier3.py --dataset "$dataset" --model_type "$model_type" --mode "$mode" --epochs "$epochs" --batch-size "$batch_size"
-  else
-    python src/classifier3.py --dataset "$dataset" --model_type "$model_type" --mode "$mode"
-  fi
+    if [ "$mode" = "train" ]; then
+        if [ "$model_type" = "cnn" ] || [ "$model_type" = "rnn" ] || [ "$model_type" = "vit" ]; then
+            echo "Epochs:  $epochs"
+            echo "Batch:   $batch_size"
+        fi
+    fi
 
-  echo
-  read -p "Press Enter to run another experiment (or Ctrl+C to exit)..."
+    echo
+    echo -n "Run? (Y/N): "
+    read confirm
+
+    if [ "$(echo "$confirm" | tr '[:upper:]' '[:lower:]')" != "y" ]; then
+        continue
+    fi
+
+    echo "Running command..."
+
+    # Use classifierSL.py for HIST/SIFT, classifierDL.py for cnn/rnn/vit
+    if [ "$model_type" = "HIST" ]; then
+        python src/classifierSL.py \
+            --dataset "$dataset" \
+            --model_type "$model_type" \
+            --mode "$mode"
+    elif [ "$model_type" = "SIFT" ]; then
+        python src/classifierSL.py \
+            --dataset "$dataset" \
+            --model_type "$model_type" \
+            --mode "$mode"
+    else
+        # cnn, rnn, vit -> classifierDL.py
+        if [ "$mode" = "train" ]; then
+            python src/classifierDL.py \
+                --dataset "$dataset" \
+                --model_type "$model_type" \
+                --mode "$mode" \
+                --epochs "$epochs" \
+                --batch-size "$batch_size"
+        else
+            python src/classifierDL.py \
+                --dataset "$dataset" \
+                --model_type "$model_type" \
+                --mode "$mode"
+        fi
+    fi
+
+    echo
+    read -s -n1 -p "Press Enter to run another experiment..."
 done

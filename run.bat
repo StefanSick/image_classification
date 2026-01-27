@@ -83,29 +83,29 @@ if /i not "%confirm%"=="Y" goto dataset
 REM EXECUTE
 echo Running command...
 
-REM Use classifier.py for HIST/SIFT, classifier3.py for cnn/rnn/vit
+REM Use classifierSL.py for HIST/SIFT, classifierDL.py for cnn/rnn/vit
 if "%model_type%"=="HIST" (
-        python src\classifier.py ^
+        python src\classifierSL.py ^
         --dataset %dataset% ^
         --model_type %model_type% ^
         --mode %mode%
 
 ) else if "%model_type%"=="SIFT" (
-        python src\classifier.py ^
+        python src\classifierSL.py ^
           --dataset %dataset% ^
           --model_type %model_type% ^
           --mode %mode%
 ) else (
-    REM cnn, rnn, vit use classifier3.py
+    REM cnn, rnn, vit use classifierDL.py
     if "%mode%"=="train" (
-        python src\classifier3.py ^
+        python src\classifierDL.py ^
           --dataset %dataset% ^
           --model_type %model_type% ^
           --mode %mode% ^
           --epochs %epochs% ^
           --batch-size %batch_size%
     ) else (
-        python src\classifier3.py ^
+        python src\classifierDL.py ^
           --dataset %dataset% ^
           --model_type %model_type% ^
           --mode %mode%
