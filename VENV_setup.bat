@@ -7,5 +7,5 @@ call venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-echo Setup complete! Use 'run.bat --help'
+echo Setup complete! Use 'VENV_run.bat'
 pause
