@@ -255,6 +255,7 @@ def main():
 
         # 4. Heatmap
         cm = confusion_matrix(y_true, y_pred)
+        print(cm)
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names, yticklabels=class_names, cmap='Blues')
         plt.title(f'Confusion Matrix: {args.model_type} ({args.dataset})')

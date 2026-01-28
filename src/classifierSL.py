@@ -318,8 +318,9 @@ def main():
         pd.DataFrame([new_result]).to_csv(results_path, mode='a', header=not os.path.exists(results_path), index=False)
 
         cm = confusion_matrix(y_test, y_pred)
+        print(cm)
         print (f"Prediction Duration: {(endp - startp):.4f}")
-
+        
         # 4. Heatmap
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names, yticklabels=class_names, cmap='Blues')
